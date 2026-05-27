@@ -6,9 +6,19 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Toggle } from "@/components/ui/Toggle";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import {
+  defaultProfile,
+  storageKeys,
+  type UserProfile,
+} from "@/lib/storageKeys";
 import { cn } from "@/lib/utils";
 
 export function SettingsView() {
+  const { state: profile, setState: setProfile } = useLocalStorageState<UserProfile>(
+    storageKeys.profile,
+    () => defaultProfile
+  );
   const [emailNotif, setEmailNotif] = useState(true);
   const [pushNotif, setPushNotif] = useState(false);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
@@ -37,7 +47,10 @@ export function SettingsView() {
               <span className="text-xs font-medium text-muted">Display name</span>
               <input
                 type="text"
-                defaultValue="LifeOS User"
+                value={profile.displayName}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, displayName: e.target.value }))
+                }
                 className={cn(
                   "mt-1.5 h-10 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-foreground",
                   "focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
@@ -48,7 +61,10 @@ export function SettingsView() {
               <span className="text-xs font-medium text-muted">Email</span>
               <input
                 type="email"
-                defaultValue="you@lifeos.app"
+                value={profile.email}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, email: e.target.value }))
+                }
                 className={cn(
                   "mt-1.5 h-10 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-foreground",
                   "focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
