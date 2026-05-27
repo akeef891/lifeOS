@@ -41,7 +41,7 @@ export function NotificationsMenu() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "relative rounded-lg p-2 text-muted transition-colors",
+          "relative rounded-xl p-2.5 text-muted transition-colors",
           "hover:bg-white/[0.06] hover:text-foreground",
           open && "bg-white/[0.06] text-foreground"
         )}
@@ -116,3 +116,4 @@ export function NotificationsMenu() {
     </div>
   );
 }
+

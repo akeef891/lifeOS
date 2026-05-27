@@ -14,8 +14,8 @@ const variants = {
 };
 
 const sizes = {
-  sm: "h-8 px-3 text-xs rounded-lg",
-  md: "h-9 px-4 text-sm rounded-lg",
+  sm: "h-9 min-w-9 px-3 text-xs rounded-lg",
+  md: "h-10 min-w-10 px-4 text-sm rounded-lg",
 };
 
 export function Button({
@@ -28,7 +28,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 font-medium transition-colors",
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "disabled:pointer-events-none disabled:opacity-50",
         variants[variant],

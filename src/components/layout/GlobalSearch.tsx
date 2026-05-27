@@ -87,7 +87,7 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
         aria-label="Search tasks and notes"
         aria-controls="global-search-results"
         className={cn(
-          "h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] pl-9 pr-3 text-sm text-foreground sm:pr-16",
+          "h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] pl-9 pr-3 text-sm text-foreground sm:pr-16",
           "placeholder:text-muted focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
         )}
       />
@@ -177,7 +177,7 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
       <button
         type="button"
         onClick={openSearch}
-        className="rounded-lg p-2 text-muted transition-colors hover:bg-white/[0.06] hover:text-foreground sm:hidden"
+        className="rounded-xl p-2.5 text-muted transition-colors hover:bg-white/[0.06] hover:text-foreground sm:hidden"
         aria-label="Open search"
       >
         <Search className="h-5 w-5" />
@@ -195,7 +195,7 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
               aria-hidden="true"
             />
             <motion.div
-              className="fixed inset-x-0 top-16 z-50 border-b border-white/[0.06] bg-background/95 p-4 backdrop-blur-xl sm:hidden"
+              className="fixed inset-x-0 top-16 z-50 border-b border-white/[0.06] bg-background/95 px-3 py-3 backdrop-blur-xl sm:hidden"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -208,14 +208,14 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
                 <button
                   type="button"
                   onClick={() => onMobileOpenChange(false)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1 text-muted hover:text-foreground sm:hidden"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-muted hover:text-foreground sm:hidden"
                   aria-label="Close search"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
               {query.trim().length > 0 && (
-                <div className="mt-3 max-h-[50vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-950/95">
+                <div className="mt-3 max-h-[55vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-950/95">
                   {!hasMounted ? (
                     <div className="space-y-2 p-3">
                       <Skeleton className="h-10 w-full" />
@@ -263,3 +263,4 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
     </>
   );
 }
+

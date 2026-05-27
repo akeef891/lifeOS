@@ -43,7 +43,7 @@ export function ProfileMenu() {
           type="button"
           onClick={() => setOpen((v) => !v)}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.08] bg-gradient-to-br from-violet-500/30 to-indigo-600/30 text-xs font-semibold text-foreground transition-transform hover:scale-105",
+            "flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-gradient-to-br from-violet-500/30 to-indigo-600/30 text-xs font-semibold text-foreground transition-transform hover:scale-105",
             open && "ring-2 ring-violet-500/40"
           )}
           aria-label="Account menu"
@@ -69,7 +69,7 @@ export function ProfileMenu() {
                 setOpen(false);
                 setProfileOpen(true);
               }}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-sm text-foreground transition-colors hover:bg-white/[0.06]"
             >
               <User className="h-4 w-4 text-muted" />
               View profile
@@ -78,7 +78,7 @@ export function ProfileMenu() {
               href="/settings"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-sm text-foreground transition-colors hover:bg-white/[0.06]"
             >
               <Settings className="h-4 w-4 text-muted" />
               Settings
@@ -91,7 +91,7 @@ export function ProfileMenu() {
                 setLogoutMessage(true);
                 window.setTimeout(() => setLogoutMessage(false), 2500);
               }}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-rose-300 transition-colors hover:bg-rose-500/10"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-sm text-rose-300 transition-colors hover:bg-rose-500/10"
             >
               <LogOut className="h-4 w-4" />
               Log out
@@ -118,3 +118,4 @@ export function ProfileMenu() {
     </>
   );
 }
+

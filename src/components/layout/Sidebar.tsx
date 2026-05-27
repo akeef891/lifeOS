@@ -17,7 +17,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   const navContent = (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       <div className="flex h-16 items-center gap-2.5 border-b border-white/[0.06] px-5">
         <div
           className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/20"
@@ -31,7 +31,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         <button
           type="button"
           onClick={onClose}
-          className="ml-auto rounded-lg p-1.5 text-muted hover:bg-white/[0.06] hover:text-foreground lg:hidden"
+          className="ml-auto rounded-xl p-2 text-muted hover:bg-white/[0.06] hover:text-foreground lg:hidden"
           aria-label="Close sidebar"
         >
           <X className="h-5 w-5" />
@@ -48,7 +48,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               href={item.href}
               onClick={onClose}
               className={cn(
-                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                "group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
                   ? "text-foreground"
                   : "text-muted hover:bg-white/[0.04] hover:text-foreground"
@@ -85,7 +85,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               href={item.href}
               onClick={onClose}
               className={cn(
-                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                "group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
                   ? "text-foreground"
                   : "text-muted hover:bg-white/[0.04] hover:text-foreground"
@@ -132,7 +132,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-[260px] glass transition-transform duration-300 ease-out lg:static lg:z-auto lg:translate-x-0 lg:rounded-none lg:border-r lg:border-y-0 lg:border-l-0",
+          "fixed inset-y-0 left-0 z-50 w-[min(82vw,280px)] glass transition-transform duration-300 ease-out lg:static lg:z-auto lg:w-[260px] lg:translate-x-0 lg:rounded-none lg:border-r lg:border-y-0 lg:border-l-0",
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
         aria-label="Sidebar"

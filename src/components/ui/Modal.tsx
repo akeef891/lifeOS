@@ -52,15 +52,15 @@ export function Modal({
             aria-modal="true"
             aria-label={title}
             className={cn(
-              "fixed inset-x-0 top-16 z-50 mx-auto w-full max-w-lg px-4 sm:top-24",
+              "fixed inset-x-0 top-8 z-50 mx-auto w-full max-w-lg px-3 sm:top-16 sm:px-4",
               className
             )}
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <div className="overflow-hidden rounded-2xl border border-white/[0.10] bg-zinc-950/95 shadow-2xl shadow-black/60 backdrop-blur-2xl">
+            <div className="max-h-[calc(100dvh-4rem)] overflow-hidden rounded-2xl border border-white/[0.10] bg-zinc-950/95 shadow-2xl shadow-black/60 backdrop-blur-2xl sm:max-h-[calc(100dvh-8rem)]">
               <div className="border-b border-white/[0.06] px-5 py-4">
                 {title && (
                   <h3 className="text-base font-semibold text-foreground">
@@ -71,9 +71,9 @@ export function Modal({
                   <p className="mt-1 text-sm text-muted">{description}</p>
                 )}
               </div>
-              <div className="px-5 py-4">{children}</div>
+              <div className="max-h-[55dvh] overflow-y-auto px-4 py-4 sm:px-5">{children}</div>
               {footer && (
-                <div className="border-t border-white/[0.06] px-5 py-4">
+                <div className="border-t border-white/[0.06] px-4 py-4 sm:px-5">
                   {footer}
                 </div>
               )}
@@ -84,4 +84,3 @@ export function Modal({
     </AnimatePresence>
   );
 }
-

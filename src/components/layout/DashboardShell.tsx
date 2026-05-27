@@ -24,7 +24,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           title={title}
           onMenuClick={() => setSidebarOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto px-3 py-4 sm:px-6 sm:py-6 lg:px-8">{children}</main>
       </div>
     </div>
   );
