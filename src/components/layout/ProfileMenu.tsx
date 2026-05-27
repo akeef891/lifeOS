@@ -7,6 +7,7 @@ import { DropdownPanel } from "@/components/ui/DropdownPanel";
 import { ProfileModal } from "@/components/layout/ProfileModal";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { useToast } from "@/hooks/useToast";
 import {
   defaultProfile,
   storageKeys,
@@ -26,6 +27,7 @@ export function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState(false);
+  const { showToast } = useToast();
 
   const { state: profile, setState: setProfile } = useLocalStorageState<UserProfile>(
     storageKeys.profile,
@@ -104,7 +106,14 @@ export function ProfileMenu() {
         open={profileOpen}
         onClose={() => setProfileOpen(false)}
         profile={profile}
-        onSave={setProfile}
+        onSave={(nextProfile) => {
+          setProfile(nextProfile);
+          showToast({
+            title: "Profile saved",
+            description: "Your profile settings were updated.",
+            variant: "success",
+          });
+        }}
       />
 
       {logoutMessage && (

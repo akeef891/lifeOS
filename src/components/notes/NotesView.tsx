@@ -14,12 +14,14 @@ import { mockNotes } from "@/data/mock/notes";
 import { cn } from "@/lib/utils";
 import { storageKeys } from "@/lib/storageKeys";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { useToast } from "@/hooks/useToast";
 
 export function NotesView() {
   const { state: notes, setState: setNotes } = useLocalStorageState<Note[]>(
     storageKeys.notes,
     () => mockNotes
   );
+  const { showToast } = useToast();
   const [query, setQuery] = useState("");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
@@ -156,7 +158,21 @@ export function NotesView() {
                   setEditorOpen(true);
                 }}
                 onDelete={(id) => {
+                  const selected = notes.find((n) => n.id === id);
                   setNotes((prev) => prev.filter((n) => n.id !== id));
+                  if (!selected) {
+                    showToast({
+                      title: "Note not found",
+                      description: "The note may have already been removed.",
+                      variant: "error",
+                    });
+                    return;
+                  }
+                  showToast({
+                    title: "Note deleted",
+                    description: `"${selected.title}" removed successfully.`,
+                    variant: "success",
+                  });
                 }}
               />
             ))}
@@ -179,6 +195,11 @@ export function NotesView() {
               updatedAt: "Just now",
             };
             setNotes((prev) => [next, ...prev]);
+            showToast({
+              title: "Note created",
+              description: `"${next.title}" is ready.`,
+              variant: "success",
+            });
             return;
           }
 
@@ -195,6 +216,11 @@ export function NotesView() {
               };
             })
           );
+          showToast({
+            title: "Note saved",
+            description: "Your changes were saved locally.",
+            variant: "info",
+          });
         }}
       />
     </PageContainer>

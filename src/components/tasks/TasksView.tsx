@@ -13,6 +13,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { useToast } from "@/hooks/useToast";
 import { storageKeys } from "@/lib/storageKeys";
 
 function createId(prefix: string) {
@@ -27,6 +28,7 @@ export function TasksView() {
     storageKeys.tasks,
     () => mockTasks
   );
+  const { showToast } = useToast();
   const [editorOpen, setEditorOpen] = useState(false);
 
   const activeTasks = tasks.filter((t) => !t.completed);
@@ -126,7 +128,23 @@ export function TasksView() {
                     );
                   }}
                   onDelete={(id) => {
+                    const selected = tasks.find((t) => t.id === id);
                     setTasks((prev) => prev.filter((t) => t.id !== id));
+
+                    if (!selected) {
+                      showToast({
+                        title: "Task not found",
+                        description: "The task may have already been removed.",
+                        variant: "error",
+                      });
+                      return;
+                    }
+
+                    showToast({
+                      title: "Task deleted",
+                      description: `"${selected.title}" removed from your list.`,
+                      variant: "success",
+                    });
                   }}
                 />
               ))}
@@ -173,7 +191,23 @@ export function TasksView() {
                       );
                     }}
                     onDelete={(id) => {
+                      const selected = tasks.find((t) => t.id === id);
                       setTasks((prev) => prev.filter((t) => t.id !== id));
+
+                      if (!selected) {
+                        showToast({
+                          title: "Task not found",
+                          description: "The task may have already been removed.",
+                          variant: "error",
+                        });
+                        return;
+                      }
+
+                      showToast({
+                        title: "Task deleted",
+                        description: `"${selected.title}" removed from your list.`,
+                        variant: "success",
+                      });
                     }}
                   />
                 ))}
@@ -194,6 +228,11 @@ export function TasksView() {
             ...payload,
           };
           setTasks((prev) => [next, ...prev]);
+          showToast({
+            title: "Task added",
+            description: `"${next.title}" is now in your active list.`,
+            variant: "success",
+          });
         }}
       />
     </PageContainer>
