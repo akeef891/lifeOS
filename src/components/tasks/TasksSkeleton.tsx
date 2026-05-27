@@ -1,6 +1,7 @@
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { SkeletonLines, SkeletonStatCard } from "@/components/ui/SkeletonBlocks";
 
 export function TasksSkeleton() {
   return (
@@ -17,8 +18,8 @@ export function TasksSkeleton() {
       <div className="grid gap-3 lg:grid-cols-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <GlassCard key={i} padding="md">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="mt-3 h-3 w-full" />
+            <SkeletonStatCard />
+            <SkeletonLines className="mt-4" lines={2} lineClassName="h-3" />
             <Skeleton className="mt-4 h-1.5 w-full" />
           </GlassCard>
         ))}
