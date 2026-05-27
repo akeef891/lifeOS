@@ -60,7 +60,7 @@ export function Modal({
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <div className="glass overflow-hidden rounded-2xl">
+            <div className="overflow-hidden rounded-2xl border border-white/[0.10] bg-zinc-950/95 shadow-2xl shadow-black/60 backdrop-blur-2xl">
               <div className="border-b border-white/[0.06] px-5 py-4">
                 {title && (
                   <h3 className="text-base font-semibold text-foreground">
