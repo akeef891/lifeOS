@@ -40,7 +40,7 @@ export function ProfileModal({
       open={open}
       onClose={onClose}
       title="Profile"
-      description="Update your local profile. Auth sync comes later."
+      description="Update your display preferences for this device."
       footer={
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={onClose}>

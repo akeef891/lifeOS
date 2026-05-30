@@ -2,9 +2,11 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { LogOut, Settings, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Loader2, LogOut, Settings, User } from "lucide-react";
 import { DropdownPanel } from "@/components/ui/DropdownPanel";
 import { ProfileModal } from "@/components/layout/ProfileModal";
+import { useAuth } from "@/hooks/useAuth";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import { useToast } from "@/hooks/useToast";
@@ -13,6 +15,7 @@ import {
   storageKeys,
   type UserProfile,
 } from "@/lib/storageKeys";
+import { getAuthErrorMessage } from "@/utils/authErrors";
 import { cn } from "@/lib/utils";
 
 function getInitials(name: string) {
@@ -26,7 +29,9 @@ export function ProfileMenu() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [logoutMessage, setLogoutMessage] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const { user, userProfile, logout } = useAuth();
+  const router = useRouter();
   const { showToast } = useToast();
 
   const { state: profile, setState: setProfile } = useLocalStorageState<UserProfile>(
@@ -36,7 +41,33 @@ export function ProfileMenu() {
 
   useClickOutside(containerRef, () => setOpen(false), open);
 
-  const initials = getInitials(profile.displayName);
+  const displayName =
+    userProfile?.name ?? user?.displayName ?? profile.displayName;
+  const email = userProfile?.email ?? user?.email ?? profile.email;
+  const initials = getInitials(displayName);
+
+  async function handleLogout() {
+    setOpen(false);
+    setLoggingOut(true);
+
+    try {
+      await logout();
+      showToast({
+        title: "Signed out",
+        description: "You have been logged out successfully.",
+        variant: "success",
+      });
+      router.replace("/login");
+    } catch (error) {
+      showToast({
+        title: "Sign out failed",
+        description: getAuthErrorMessage(error),
+        variant: "error",
+      });
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <>
@@ -58,9 +89,9 @@ export function ProfileMenu() {
         <DropdownPanel open={open} className="w-[min(100vw-2rem,16rem)]">
           <div className="border-b border-white/[0.06] px-4 py-3">
             <p className="truncate text-sm font-semibold text-foreground">
-              {profile.displayName}
+              {displayName}
             </p>
-            <p className="truncate text-xs text-muted">{profile.email}</p>
+            <p className="truncate text-xs text-muted">{email}</p>
           </div>
 
           <div className="p-2">
@@ -88,15 +119,16 @@ export function ProfileMenu() {
             <button
               type="button"
               role="menuitem"
-              onClick={() => {
-                setOpen(false);
-                setLogoutMessage(true);
-                window.setTimeout(() => setLogoutMessage(false), 2500);
-              }}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-sm text-rose-300 transition-colors hover:bg-rose-500/10"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-sm text-rose-300 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
             >
-              <LogOut className="h-4 w-4" />
-              Log out
+              {loggingOut ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="h-4 w-4" />
+              )}
+              {loggingOut ? "Signing out…" : "Log out"}
             </button>
           </div>
         </DropdownPanel>
@@ -105,26 +137,19 @@ export function ProfileMenu() {
       <ProfileModal
         open={profileOpen}
         onClose={() => setProfileOpen(false)}
-        profile={profile}
+        profile={{
+          displayName,
+          email,
+        }}
         onSave={(nextProfile) => {
           setProfile(nextProfile);
           showToast({
             title: "Profile saved",
-            description: "Your profile settings were updated.",
+            description: "Your local profile preferences were updated.",
             variant: "success",
           });
         }}
       />
-
-      {logoutMessage && (
-        <div
-          className="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl border border-white/[0.08] bg-zinc-950/95 px-4 py-2 text-sm text-foreground shadow-xl backdrop-blur-xl"
-          role="status"
-        >
-          Sign out will be available when authentication is connected.
-        </div>
-      )}
     </>
   );
 }
-
