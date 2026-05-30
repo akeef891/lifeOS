@@ -3,31 +3,21 @@
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { CheckSquare, Plus } from "lucide-react";
-import type { Task } from "@/data/mock/tasks";
-import { mockTasks } from "@/data/mock/tasks";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { TaskEditorModal } from "@/components/tasks/TaskEditorModal";
+import { TasksSkeleton } from "@/components/tasks/TasksSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { FirestoreErrorBanner } from "@/components/ui/FirestoreErrorBanner";
+import { useTasks } from "@/hooks/useTasks";
 import { useToast } from "@/hooks/useToast";
-import { storageKeys } from "@/lib/storageKeys";
-
-function createId(prefix: string) {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${prefix}_${crypto.randomUUID()}`;
-  }
-  return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
+import { getFirestoreErrorMessage } from "@/utils/firestoreErrors";
 
 export function TasksView() {
-  const { state: tasks, setState: setTasks } = useLocalStorageState<Task[]>(
-    storageKeys.tasks,
-    () => mockTasks
-  );
+  const { tasks, loading, error, createTask, toggleTask, deleteTask } = useTasks();
   const { showToast } = useToast();
   const [editorOpen, setEditorOpen] = useState(false);
 
@@ -38,6 +28,10 @@ export function TasksView() {
   const completed = completedTasks.length;
   const inProgress = total - completed;
   const percentComplete = total ? Math.round((completed / total) * 100) : 0;
+
+  if (loading) {
+    return <TasksSkeleton />;
+  }
 
   return (
     <PageContainer>
@@ -52,6 +46,8 @@ export function TasksView() {
           </Button>
         }
       />
+
+      {error ? <FirestoreErrorBanner message={error} /> : null}
 
       <GlassCard padding="lg" hover>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -71,16 +67,14 @@ export function TasksView() {
               <p className="text-xs text-muted">Done</p>
             </div>
             <div>
-              <p className="text-lg font-semibold text-violet-400">
-                {inProgress}
-              </p>
+              <p className="text-lg font-semibold text-violet-400">{inProgress}</p>
               <p className="text-xs text-muted">In progress</p>
             </div>
           </div>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.06]">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-500 ease-out"
             style={{ width: `${percentComplete}%` }}
           />
         </div>
@@ -98,7 +92,7 @@ export function TasksView() {
           <EmptyState
             icon={CheckSquare}
             title="No active tasks"
-            description="Add a task to start building momentum. Your tasks persist locally."
+            description="Add a task to start building momentum. Your tasks sync to your account."
             action={
               <Button onClick={() => setEditorOpen(true)} size="sm">
                 Add your first task
@@ -114,23 +108,22 @@ export function TasksView() {
                   key={task.id}
                   task={task}
                   index={index}
-                  onToggleComplete={(id) => {
-                    setTasks((prev) =>
-                      prev.map((t) => {
-                        if (t.id !== id) return t;
-                        const nextCompleted = !t.completed;
-                        return {
-                          ...t,
-                          completed: nextCompleted,
-                          progress: nextCompleted ? 100 : 0,
-                        };
-                      })
-                    );
-                  }}
-                  onDelete={(id) => {
+                  onToggleComplete={async (id) => {
                     const selected = tasks.find((t) => t.id === id);
-                    setTasks((prev) => prev.filter((t) => t.id !== id));
+                    if (!selected) return;
 
+                    try {
+                      await toggleTask(id, !selected.completed);
+                    } catch (err) {
+                      showToast({
+                        title: "Could not update task",
+                        description: getFirestoreErrorMessage(err),
+                        variant: "error",
+                      });
+                    }
+                  }}
+                  onDelete={async (id) => {
+                    const selected = tasks.find((t) => t.id === id);
                     if (!selected) {
                       showToast({
                         title: "Task not found",
@@ -140,11 +133,20 @@ export function TasksView() {
                       return;
                     }
 
-                    showToast({
-                      title: "Task deleted",
-                      description: `"${selected.title}" removed from your list.`,
-                      variant: "success",
-                    });
+                    try {
+                      await deleteTask(id);
+                      showToast({
+                        title: "Task deleted",
+                        description: `"${selected.title}" removed from your list.`,
+                        variant: "success",
+                      });
+                    } catch (err) {
+                      showToast({
+                        title: "Could not delete task",
+                        description: getFirestoreErrorMessage(err),
+                        variant: "error",
+                      });
+                    }
                   }}
                 />
               ))}
@@ -177,37 +179,38 @@ export function TasksView() {
                     key={task.id}
                     task={task}
                     index={index}
-                    onToggleComplete={(id) => {
-                      setTasks((prev) =>
-                        prev.map((t) => {
-                          if (t.id !== id) return t;
-                          const nextCompleted = !t.completed;
-                          return {
-                            ...t,
-                            completed: nextCompleted,
-                            progress: nextCompleted ? 100 : 0,
-                          };
-                        })
-                      );
-                    }}
-                    onDelete={(id) => {
+                    onToggleComplete={async (id) => {
                       const selected = tasks.find((t) => t.id === id);
-                      setTasks((prev) => prev.filter((t) => t.id !== id));
+                      if (!selected) return;
 
-                      if (!selected) {
+                      try {
+                        await toggleTask(id, !selected.completed);
+                      } catch (err) {
                         showToast({
-                          title: "Task not found",
-                          description: "The task may have already been removed.",
+                          title: "Could not update task",
+                          description: getFirestoreErrorMessage(err),
                           variant: "error",
                         });
-                        return;
                       }
+                    }}
+                    onDelete={async (id) => {
+                      const selected = tasks.find((t) => t.id === id);
+                      if (!selected) return;
 
-                      showToast({
-                        title: "Task deleted",
-                        description: `"${selected.title}" removed from your list.`,
-                        variant: "success",
-                      });
+                      try {
+                        await deleteTask(id);
+                        showToast({
+                          title: "Task deleted",
+                          description: `"${selected.title}" removed from your list.`,
+                          variant: "success",
+                        });
+                      } catch (err) {
+                        showToast({
+                          title: "Could not delete task",
+                          description: getFirestoreErrorMessage(err),
+                          variant: "error",
+                        });
+                      }
                     }}
                   />
                 ))}
@@ -220,19 +223,21 @@ export function TasksView() {
       <TaskEditorModal
         open={editorOpen}
         onClose={() => setEditorOpen(false)}
-        onCreate={(payload) => {
-          const next: Task = {
-            id: createId("task"),
-            completed: false,
-            progress: 0,
-            ...payload,
-          };
-          setTasks((prev) => [next, ...prev]);
-          showToast({
-            title: "Task added",
-            description: `"${next.title}" is now in your active list.`,
-            variant: "success",
-          });
+        onCreate={async (payload) => {
+          try {
+            await createTask(payload);
+            showToast({
+              title: "Task added",
+              description: `"${payload.title}" is now in your active list.`,
+              variant: "success",
+            });
+          } catch (err) {
+            showToast({
+              title: "Could not create task",
+              description: getFirestoreErrorMessage(err),
+              variant: "error",
+            });
+          }
         }}
       />
     </PageContainer>

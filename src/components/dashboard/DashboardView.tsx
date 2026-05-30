@@ -14,27 +14,15 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
-import type { Task } from "@/data/mock/tasks";
-import { mockTasks } from "@/data/mock/tasks";
-import type { Note } from "@/data/mock/notes";
-import { mockNotes } from "@/data/mock/notes";
-import { useLocalStorageState } from "@/hooks/useLocalStorageState";
-import { storageKeys } from "@/lib/storageKeys";
-import { useHasMounted } from "@/hooks/useHasMounted";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { useTasks } from "@/hooks/useTasks";
+import { useNotes } from "@/hooks/useNotes";
 
 export function DashboardView() {
-  const { state: persistedTasks } = useLocalStorageState<Task[]>(
-    storageKeys.tasks,
-    () => mockTasks
-  );
-  const { state: persistedNotes } = useLocalStorageState<Note[]>(
-    storageKeys.notes,
-    () => mockNotes
-  );
-  const hasMounted = useHasMounted();
+  const { tasks, loading: tasksLoading } = useTasks();
+  const { notes, loading: notesLoading } = useNotes();
 
-  const tasks = hasMounted ? persistedTasks : mockTasks;
-  const notes = hasMounted ? persistedNotes : mockNotes;
+  const loading = tasksLoading || notesLoading;
 
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.completed).length;
@@ -99,11 +87,32 @@ export function DashboardView() {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-8">
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-9 w-full max-w-lg" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className="h-28 rounded-2xl" />
+          ))}
+        </div>
+        <div className="grid gap-6 lg:grid-cols-5">
+          <Skeleton className="h-72 rounded-2xl lg:col-span-3" />
+          <Skeleton className="h-72 rounded-2xl lg:col-span-2" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <header className="space-y-1">
         <p className="text-sm font-medium text-violet-400">Good morning</p>
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl text-balance">
+        <h2 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Welcome back — here&apos;s your day at a glance
         </h2>
         <p className="text-sm text-muted sm:text-base">
@@ -158,7 +167,7 @@ export function DashboardView() {
               {recentActivity.map((item) => (
                 <li
                   key={item.id}
-                  className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-3"
+                  className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-3 transition-colors hover:bg-white/[0.04]"
                 >
                   <span
                     className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/10"

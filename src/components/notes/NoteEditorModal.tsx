@@ -52,7 +52,7 @@ export function NoteEditorModal({
       open={open}
       onClose={onClose}
       title={mode === "edit" ? "Edit note" : "Create note"}
-      description="Everything is stored locally in your browser."
+      description="Your note is saved securely to your LifeOS account."
       footer={
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
           <Button variant="ghost" onClick={onClose}>

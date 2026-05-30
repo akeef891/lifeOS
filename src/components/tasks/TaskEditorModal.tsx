@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import type { TaskPriority } from "@/data/mock/tasks";
+import type { TaskPriority } from "@/types/task";
 import { cn } from "@/lib/utils";
 
 interface TaskEditorPayload {

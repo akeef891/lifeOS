@@ -2,9 +2,46 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only read and write their own profile document.
+    // User profile document
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
+
+      // Tasks subcollection — path userId must match auth uid
+      match /tasks/{taskId} {
+        // list: required for onSnapshot / collection queries (including empty collections)
+        allow list: if isOwner(userId);
+
+        allow get: if isOwner(userId) && resource.data.userId == request.auth.uid;
+
+        allow create: if isOwner(userId)
+          && request.resource.data.userId == request.auth.uid;
+
+        allow update: if isOwner(userId)
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == request.auth.uid;
+
+        allow delete: if isOwner(userId) && resource.data.userId == request.auth.uid;
+      }
+
+      // Notes subcollection
+      match /notes/{noteId} {
+        allow list: if isOwner(userId);
+
+        allow get: if isOwner(userId) && resource.data.userId == request.auth.uid;
+
+        allow create: if isOwner(userId)
+          && request.resource.data.userId == request.auth.uid;
+
+        allow update: if isOwner(userId)
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == request.auth.uid;
+
+        allow delete: if isOwner(userId) && resource.data.userId == request.auth.uid;
+      }
     }
+  }
+
+  function isOwner(userId) {
+    return request.auth != null && request.auth.uid == userId;
   }
 }

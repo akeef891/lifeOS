@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { FileText, Trash2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import type { Note } from "@/data/mock/notes";
+import type { Note } from "@/types/note";
 
 interface NoteCardProps {
   note: Note;

@@ -4,16 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckSquare, FileText, Search, X } from "lucide-react";
-import type { Note } from "@/data/mock/notes";
-import { mockNotes } from "@/data/mock/notes";
-import type { Task } from "@/data/mock/tasks";
-import { mockTasks } from "@/data/mock/tasks";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useHasMounted } from "@/hooks/useHasMounted";
-import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { useTasks } from "@/hooks/useTasks";
+import { useNotes } from "@/hooks/useNotes";
 import { useKeyboardShortcut } from "@/hooks/useKeyboardShortcut";
 import { searchTasksAndNotes } from "@/lib/global-search";
-import { storageKeys } from "@/lib/storageKeys";
 import { cn } from "@/lib/utils";
 
 interface GlobalSearchProps {
@@ -26,27 +21,17 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
   const panelRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
-  const hasMounted = useHasMounted();
 
-  const { state: persistedTasks } = useLocalStorageState<Task[]>(
-    storageKeys.tasks,
-    () => mockTasks
-  );
-  const { state: persistedNotes } = useLocalStorageState<Note[]>(
-    storageKeys.notes,
-    () => mockNotes
-  );
-
-  const tasks = hasMounted ? persistedTasks : mockTasks;
-  const notes = hasMounted ? persistedNotes : mockNotes;
+  const { tasks, loading: tasksLoading } = useTasks();
+  const { notes, loading: notesLoading } = useNotes();
+  const loading = tasksLoading || notesLoading;
 
   const results = useMemo(
     () => searchTasksAndNotes(query, tasks, notes),
     [query, tasks, notes]
   );
 
-  const showPanel =
-    focused && query.trim().length > 0 && (hasMounted || query.length > 0);
+  const showPanel = focused && query.trim().length > 0;
 
   const openSearch = useCallback(() => {
     onMobileOpenChange(true);
@@ -115,7 +100,7 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
             "max-h-[min(60vh,320px)] overflow-y-auto"
           )}
         >
-          {!hasMounted ? (
+          {loading ? (
             <div className="space-y-2 p-3" aria-busy="true">
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
@@ -216,7 +201,7 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
               </div>
               {query.trim().length > 0 && (
                 <div className="mt-3 max-h-[55vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-950/95">
-                  {!hasMounted ? (
+                  {loading ? (
                     <div className="space-y-2 p-3">
                       <Skeleton className="h-10 w-full" />
                       <Skeleton className="h-10 w-full" />
@@ -263,4 +248,3 @@ export function GlobalSearch({ mobileOpen, onMobileOpenChange }: GlobalSearchPro
     </>
   );
 }
-

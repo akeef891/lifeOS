@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Check, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
-import type { Task } from "@/data/mock/tasks";
+import type { Task } from "@/types/task";
 import { cn } from "@/lib/utils";
 
 interface TaskCardProps {

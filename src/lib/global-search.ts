@@ -1,5 +1,5 @@
-import type { Note } from "@/data/mock/notes";
-import type { Task } from "@/data/mock/tasks";
+import type { Note } from "@/types/note";
+import type { Task } from "@/types/task";
 
 export interface SearchResultItem {
   id: string;

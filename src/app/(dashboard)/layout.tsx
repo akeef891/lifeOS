@@ -2,6 +2,7 @@
 
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { TasksNotesProvider } from "@/context/TasksNotesContext";
 
 export default function DashboardLayout({
   children,
@@ -10,7 +11,9 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
-      <DashboardShell>{children}</DashboardShell>
+      <TasksNotesProvider>
+        <DashboardShell>{children}</DashboardShell>
+      </TasksNotesProvider>
     </AuthGuard>
   );
 }

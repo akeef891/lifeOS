@@ -5,34 +5,24 @@ import { AnimatePresence } from "framer-motion";
 import { Plus, Search } from "lucide-react";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { NoteEditorModal } from "@/components/notes/NoteEditorModal";
+import { NotesSkeleton } from "@/components/notes/NotesSkeleton";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
-import type { Note } from "@/data/mock/notes";
-import { mockNotes } from "@/data/mock/notes";
-import { cn } from "@/lib/utils";
-import { storageKeys } from "@/lib/storageKeys";
-import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { FirestoreErrorBanner } from "@/components/ui/FirestoreErrorBanner";
+import { useNotes } from "@/hooks/useNotes";
 import { useToast } from "@/hooks/useToast";
+import { cn } from "@/lib/utils";
+import { getFirestoreErrorMessage } from "@/utils/firestoreErrors";
 
 export function NotesView() {
-  const { state: notes, setState: setNotes } = useLocalStorageState<Note[]>(
-    storageKeys.notes,
-    () => mockNotes
-  );
+  const { notes, loading, error, createNote, updateNote, deleteNote } = useNotes();
   const { showToast } = useToast();
   const [query, setQuery] = useState("");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-
-  function createId(prefix: string) {
-    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-      return `${prefix}_${crypto.randomUUID()}`;
-    }
-    return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-  }
 
   const editingNote = useMemo(
     () => notes.find((n) => n.id === editingNoteId) ?? null,
@@ -59,7 +49,9 @@ export function NotesView() {
     );
   }, [notes, query]);
 
-  const notesForEmpty = filteredNotes;
+  if (loading) {
+    return <NotesSkeleton />;
+  }
 
   return (
     <PageContainer>
@@ -81,6 +73,8 @@ export function NotesView() {
         }
       />
 
+      {error ? <FirestoreErrorBanner message={error} /> : null}
+
       <label className="relative block">
         <span className="sr-only">Search notes</span>
         <Search
@@ -93,7 +87,7 @@ export function NotesView() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search notes..."
           className={cn(
-            "h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] pl-10 pr-4 text-sm text-foreground",
+            "h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] pl-10 pr-4 text-base text-foreground sm:h-10 sm:text-sm",
             "placeholder:text-muted focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
           )}
         />
@@ -103,7 +97,7 @@ export function NotesView() {
         <EmptyState
           icon={Search}
           title="No notes yet"
-          description="Create your first note. Everything is saved to localStorage."
+          description="Create your first note. Everything is saved to your account."
           action={
             <Button
               size="sm"
@@ -117,18 +111,14 @@ export function NotesView() {
             </Button>
           }
         />
-      ) : notesForEmpty.length === 0 ? (
+      ) : filteredNotes.length === 0 ? (
         <EmptyState
           icon={Search}
           title="No notes found"
           description="Try a different search term or create a new note."
           action={
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Button
-                size="sm"
-                onClick={() => setQuery("")}
-                variant="secondary"
-              >
+              <Button size="sm" onClick={() => setQuery("")} variant="secondary">
                 Clear search
               </Button>
               <Button
@@ -157,9 +147,8 @@ export function NotesView() {
                   setEditingNoteId(id);
                   setEditorOpen(true);
                 }}
-                onDelete={(id) => {
+                onDelete={async (id) => {
                   const selected = notes.find((n) => n.id === id);
-                  setNotes((prev) => prev.filter((n) => n.id !== id));
                   if (!selected) {
                     showToast({
                       title: "Note not found",
@@ -168,11 +157,21 @@ export function NotesView() {
                     });
                     return;
                   }
-                  showToast({
-                    title: "Note deleted",
-                    description: `"${selected.title}" removed successfully.`,
-                    variant: "success",
-                  });
+
+                  try {
+                    await deleteNote(id);
+                    showToast({
+                      title: "Note deleted",
+                      description: `"${selected.title}" removed successfully.`,
+                      variant: "success",
+                    });
+                  } catch (err) {
+                    showToast({
+                      title: "Could not delete note",
+                      description: getFirestoreErrorMessage(err),
+                      variant: "error",
+                    });
+                  }
                 }}
               />
             ))}
@@ -185,42 +184,49 @@ export function NotesView() {
         onClose={() => setEditorOpen(false)}
         mode={editorMode}
         initial={initialDraft}
-        onSave={(draft) => {
+        onSave={async (draft) => {
           if (editorMode === "create") {
-            const next: Note = {
-              id: createId("note"),
-              title: draft.title,
-              excerpt: draft.excerpt,
-              tag: draft.tag,
-              updatedAt: "Just now",
-            };
-            setNotes((prev) => [next, ...prev]);
-            showToast({
-              title: "Note created",
-              description: `"${next.title}" is ready.`,
-              variant: "success",
-            });
+            try {
+              await createNote({
+                title: draft.title,
+                content: draft.excerpt,
+                tag: draft.tag,
+              });
+              showToast({
+                title: "Note created",
+                description: `"${draft.title}" is ready.`,
+                variant: "success",
+              });
+            } catch (err) {
+              showToast({
+                title: "Could not create note",
+                description: getFirestoreErrorMessage(err),
+                variant: "error",
+              });
+            }
             return;
           }
 
           if (!editingNoteId) return;
-          setNotes((prev) =>
-            prev.map((n) => {
-              if (n.id !== editingNoteId) return n;
-              return {
-                ...n,
-                title: draft.title,
-                excerpt: draft.excerpt,
-                tag: draft.tag,
-                updatedAt: "Just now",
-              };
-            })
-          );
-          showToast({
-            title: "Note saved",
-            description: "Your changes were saved locally.",
-            variant: "info",
-          });
+
+          try {
+            await updateNote(editingNoteId, {
+              title: draft.title,
+              content: draft.excerpt,
+              tag: draft.tag,
+            });
+            showToast({
+              title: "Note saved",
+              description: "Your changes were synced to the cloud.",
+              variant: "success",
+            });
+          } catch (err) {
+            showToast({
+              title: "Could not save note",
+              description: getFirestoreErrorMessage(err),
+              variant: "error",
+            });
+          }
         }}
       />
     </PageContainer>
